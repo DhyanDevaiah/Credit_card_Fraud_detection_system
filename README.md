@@ -1,7 +1,5 @@
 # Credit_card_Fraud_detection_system
 
-This project is a credit card fraud detection system that leverages machine learning and speech recognition to identify fraudulent transactions. The system uses a Support Vector Machine (SVM) model to classify transaction types based on clues provided either through text input or speech recognition.
-
 Installation:
 1) Flask: For creating the web application.                                                    "pip install -U Flask"
 2) Flask-CORS: For enabling Cross-Origin Resource Sharing (CORS).                              "pip install -U Flask-CORS"
