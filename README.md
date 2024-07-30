@@ -6,9 +6,12 @@ Usage:
 1) Ensure you have the dataset file fraud_datasets.file in the project directory.
 2) To the main script where it only predicts fraud statements, run the below command
      python fraud.py
-   Else to run the code where we can make changes to the datasets, run the below command
+   To run the code where we can make changes to the datasets (update the datasets), run the below command
      python fraud_dev.py
 3) The system will start listening for speech input. Speak clearly into your microphone. The system will transcribe the speech, classify the transaction type, and provide feedback on the accuracy of the classification.
+4) First run the python file and then open the respective html file.
+   The prediction html file is fraud_ui
+   The prediction and updation html file is fraud_dev_ui
 
 Features:
 1)  Machine Learning Model: Uses SVM to classify transaction types.
@@ -30,5 +33,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 
 Feel free to reach out if you have any questions or need further assistance!
-
-Happy coding!
