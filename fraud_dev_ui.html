@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Input with Prediction and Updation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #000;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            white-space: nowrap;
+        }
+        h1 img {
+            width: 40px;
+            height: 40px;
+            margin-right: 15px;
+        }
+        button {
+            background-color: #0F52BA;
+            border: none;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0d47a1;
+        }
+        #status, #recognized-text, #prediction, #update, #correct-type {
+            margin: 10px 0;
+        }
+        .hidden {
+            display: none;
+        }
+        .update-section {
+            margin-top: 20px;
+        }
+        .update-section .yes-btn {
+            background-color: #4CAF50;
+        }
+        .update-section .yes-btn:hover {
+            background-color: #388E3C;
+        }
+        .update-section .no-btn {
+            background-color: #f44336;
+        }
+        .update-section .no-btn:hover {
+            background-color: #d32f2f;
+        }
+        .correct-type-section {
+            margin-top: 10px;
+        }
+        .correct-type-section input {
+            padding: 10px;
+            width: 80%;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <img src="https://img.icons8.com/material-outlined/24/000000/microphone.png" alt="Microphone">
+            Voice Input with Prediction and Updation
+        </h1>
+        <button id="start-record-btn"><i class="fas fa-play"></i> Start Recording</button>
+        <button id="stop-record-btn" class="hidden"><i class="fas fa-stop"></i> Stop Recording</button>
+        <p id="status">Press "Start Recording" to begin.</p>
+        <p id="recognized-text"></p>
+        <p id="prediction"></p>
+        <div id="update-section" class="update-section hidden">
+            <p id="update">Is this prediction correct?</p>
+            <button id="yes-btn" class="yes-btn"><i class="fas fa-check"></i> Yes</button>
+            <button id="no-btn" class="no-btn"><i class="fas fa-times"></i> No</button>
+            <div id="correct-type-section" class="correct-type-section hidden">
+                <label for="correct-type">Please provide the correct type:</label>
+                <input type="text" id="correct-type" placeholder="fraud/normal">
+                <button id="submit-type-btn"><i class="fas fa-paper-plane"></i> Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-record-btn');
+        const stopBtn = document.getElementById('stop-record-btn');
+        const statusEl = document.getElementById('status');
+        const recognizedTextEl = document.getElementById('recognized-text');
+        const predictionEl = document.getElementById('prediction');
+        const updateSection = document.getElementById('update-section');
+        const correctTypeSection = document.getElementById('correct-type-section');
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+        const submitTypeBtn = document.getElementById('submit-type-btn');
+        const correctTypeInput = document.getElementById('correct-type');
+        let recognition;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                statusEl.textContent = 'Voice recognition started. Try speaking into the microphone.';
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        statusEl.textContent = 'Processing...';
+                        recognizedTextEl.textContent = 'You said: ' + transcript;
+                        sendVoiceData(transcript);
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                statusEl.textContent = interimTranscript;
+            };
+
+            recognition.onerror = (event) => {
+                statusEl.textContent = 'Error occurred in recognition: ' + event.error;
+            };
+
+            recognition.onend = () => {
+                statusEl.textContent = 'Voice recognition ended.';
+                stopBtn.classList.add('hidden');
+                startBtn.classList.remove('hidden');
+            };
+        } else {
+            statusEl.textContent = 'Speech recognition not supported in this browser.';
+        }
+
+        startBtn.addEventListener('click', () => {
+            recognition.start();
+            startBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+        });
+
+        stopBtn.addEventListener('click', () => {
+            recognition.stop();
+            stopBtn.classList.add('hidden');
+            startBtn.classList.remove('hidden');
+        });
+
+        function sendVoiceData(transcript) {
+            fetch('http://localhost:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ clue: transcript })
+            })
+            .then(response => response.json())
+            .then(data => {
+                predictionEl.textContent = 'Predicted type: ' + data.predicted_type;
+                statusEl.textContent = 'Prediction received.';
+                updateSection.classList.remove('hidden');
+            })
+            .catch((error) => {
+                statusEl.textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            });
+        }
+
+        yesBtn.addEventListener('click', () => {
+            updateSection.classList.add('hidden');
+            statusEl.textContent = 'Thank you for your update!';
+        });
+
+        noBtn.addEventListener('click', () => {
+            correctTypeSection.classList.remove('hidden');
+        });
+
+        submitTypeBtn.addEventListener('click', () => {
+            const correctType = correctTypeInput.value.trim();
+            const transcript = recognizedTextEl.textContent.replace('You said: ', '');
+
+            fetch('http://localhost:5000/retrain', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ clue: transcript, type: correctType })
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.textContent = 'Model retrained with new data.';
+                correctTypeSection.classList.add('hidden');
+                updateSection.classList.add('hidden');
+            })
+            .catch((error) => {
+                statusEl.textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

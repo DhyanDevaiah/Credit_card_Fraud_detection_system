@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Input with Prediction</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        h1 img {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #start-record-btn {
+            background-color: #4caf50;
+            color: white;
+        }
+        #stop-record-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+        p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        #status {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <img src="https://img.icons8.com/material-outlined/24/000000/microphone.png" alt="Microphone">
+            Voice Input with Prediction
+        </h1>
+        <button id="start-record-btn">Start Recording</button>
+        <button id="stop-record-btn" disabled>Stop Recording</button>
+        <p id="status">Press "Start Recording" to begin.</p>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-record-btn');
+        const stopBtn = document.getElementById('stop-record-btn');
+        const statusEl = document.getElementById('status');
+        let recognition;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                statusEl.textContent = 'Voice recognition started. Try speaking into the microphone.';
+                statusEl.style.color = '#4caf50';
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        statusEl.textContent = 'You said: ' + transcript;
+                        sendVoiceData(transcript);
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                statusEl.textContent = interimTranscript;
+            };
+
+            recognition.onerror = (event) => {
+                statusEl.textContent = 'Error occurred in recognition: ' + event.error;
+                statusEl.style.color = '#f44336';
+            };
+
+            recognition.onend = () => {
+                statusEl.textContent = 'Voice recognition ended.';
+                stopBtn.disabled = true;
+                startBtn.disabled = false;
+                statusEl.style.color = '#666';
+            };
+        } else {
+            statusEl.textContent = 'Speech recognition not supported in this browser.';
+            statusEl.style.color = '#f44336';
+        }
+
+        startBtn.addEventListener('click', () => {
+            recognition.start();
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        });
+
+        stopBtn.addEventListener('click', () => {
+            recognition.stop();
+            stopBtn.disabled = true;
+            startBtn.disabled = false;
+        });
+
+        function sendVoiceData(transcript) {
+            fetch('http://localhost:5000/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ clue: transcript })
+            })
+            .then(response => response.json())
+            .then(data => {
+                statusEl.textContent += '\nPredicted type: ' + data.predicted_type;
+                statusEl.style.color = '#333';
+            })
+            .catch((error) => {
+                statusEl.textContent += '\nError: ' + error.message;
+                statusEl.style.color = '#f44336';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
