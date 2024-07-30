@@ -2,12 +2,19 @@
 
 This project is a credit card fraud detection system that leverages machine learning and speech recognition to identify fraudulent transactions. The system uses a Support Vector Machine (SVM) model to classify transaction types based on clues provided either through text input or speech recognition.
 
+Installation:
+1) Flask: For creating the web application.                                                    "pip install -U Flask"
+2) Flask-CORS: For enabling Cross-Origin Resource Sharing (CORS).                              "pip install -U Flask-CORS"
+3) Pandas: For data manipulation and analysis.                                                 "pip install pandas"
+4) Scikit-learn: For machine learning functionalities.                                         "pip install -U scikit-learn"
+5) Numpy: For numerical operations, especially as a dependency of scikit-learn. (Optional)     "pip install numpy"
+   
 Usage:
 1) Ensure you have the dataset file fraud_datasets.file in the project directory.
-2) If you want only the voice input predict fraud/normal statements, run the below command
-     python fraud.py
-   If you want similar function of prediction and also make changes to the datasets (update the datasets), run the below command
-     python fraud_dev.py
+2) If you want only the voice input predict fraud/normal statements, run the command
+     "python fraud.py"
+   If you want similar function of prediction and also make changes to the datasets (update the datasets), run the command
+     "python fraud_dev.py"
 3) The system will start listening for speech input. Speak clearly into your microphone. The system will transcribe the speech, classify the transaction type, and provide feedback on the accuracy of the classification.
 4) First run the python file and then open the respective html file.
    The prediction html file is fraud_ui
