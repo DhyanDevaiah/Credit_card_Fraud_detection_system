@@ -4,9 +4,9 @@ This project is a credit card fraud detection system that leverages machine lear
 
 Usage:
 1) Ensure you have the dataset file fraud_datasets.file in the project directory.
-2) To the main script where it only predicts fraud statements, run the below command
+2) If you want only the voice input predict fraud/normal statements, run the below command
      python fraud.py
-   To run the code where we can make changes to the datasets (update the datasets), run the below command
+   If you want similar function of prediction and also make changes to the datasets (update the datasets), run the below command
      python fraud_dev.py
 3) The system will start listening for speech input. Speak clearly into your microphone. The system will transcribe the speech, classify the transaction type, and provide feedback on the accuracy of the classification.
 4) First run the python file and then open the respective html file.
